@@ -22,12 +22,24 @@ contract Bank {
         emit deposit(msg.sender, depositAmount);
     }
 
-    function Withdraw(uint64 withdrawAmount) public {
-        if (withdrawAmount <= balances[msg.sender]) {
-            balances[msg.sender] -= withdrawAmount;
-        }
-        emit withdraw(msg.sender, withdrawAmount);
+    // function Withdraw(uint64 withdrawAmount) public {
+    //     if (withdrawAmount <= balances[msg.sender]) {
+    //         balances[msg.sender] -= withdrawAmount;
+    //     }
+    //     emit withdraw(msg.sender, withdrawAmount);
+    // }
+
+     modifier sufficientBalance(uint64 amount){
+        require (balances[msg.sender]>= amount, "Insufficient Balance in account");
+        _;
     }
+
+    function Withdraw(uint64 withdrawAmount) public sufficientBalance(withdrawAmount){
+        balances[msg.sender] -= withdrawAmount;
+        emit withdraw(msg.sender,withdrawAmount);
+       
+    } 
+
 
     function transfer(address to, uint64 amount) public {
         if (amount > balances[msg.sender])
