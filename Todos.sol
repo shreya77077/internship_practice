@@ -8,11 +8,18 @@ contract TodoList {
         uint256 deadline;
     }
 
+   
     Todo[] public todos;
 
-    function create(string calldata _things, uint256 _deadline) public {
-        todos.push(Todo(_things, false, block.timestamp + _deadline));
+     mapping(address => mapping(uint => Todo)) public User;
+
+    function userstore(string calldata _things, uint _deadline, uint id) public {
+        User[msg.sender][id] = Todo(_things,false,_deadline);
     }
+
+    // function create(string calldata _things, uint256 _deadline) public {
+    //     todos.push(Todo(_things, false, block.timestamp + _deadline));
+    // }
 
     function updateThings(uint256 _index, string calldata _things) public {
         todos[_index].things = _things;
