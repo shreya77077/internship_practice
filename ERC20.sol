@@ -1,82 +1,80 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.18;
 
-interface IERC20{
-   
-    function totalSupply() external view returns(uint256);
-    function balanceOf(address account)external view returns(uint256);
-       //return balances[msg.sender];
-    
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
-    function transfer(address to,uint256 amount)external returns (bool);
-
-    function allowance(address owner,address spender)external view returns (uint256);
-    function approve(address spender,uint256 amount) external returns(bool);
-    function transferFrom(address sender,address to,uint256 amount)external returns(bool);
-
-     event Transfer(address indexed from , address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender,uint256 value);
-
-    
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-contract MyToken is IERC20{
-    
-     mapping(address => uint64) public balance;
-     //mapping(address => mapping(uint => Todo)) public User;
-     mapping (address=>mapping(uint=>uint64)) public allowance;
+contract MyToken is IERC20 {
+    string public name;
+    string public symbol;
+    uint8 public decimals;
+    uint256 public tokenSupply;
 
-     uint256 public tokenSupply;
-    
-    // constructor(){
-        // string Name: smartSense;
-        // string Symbol: sS;
-        // uint256 Token_id: 219301280;
-        string smartSense;
-        string  sS;
-        //uint256 219301280;
+    mapping(address => mapping(address => uint256)) private allow;
+    mapping(address => uint256) private balance;
 
-    // }
+    constructor()  {
+        name = "smartSense";
+        symbol = "SMART";
+        decimals = 18;
+        tokenSupply = 10000000000;
+    }
 
-    function totalSupply() external view returns(uint256){
-        //require(tokenSupply < amount);
+    function totalSupply() external view override returns (uint256) {
         return tokenSupply;
     }
 
-    function transfer(address to,uint256 amount) external returns(bool) {
-        require(amount< balance[msg.sender]);
+    function allowance(address owner, address spender) external view override returns (uint256) {
+        return allow[owner][spender];
+    }
+
+    function approve(address spender, uint256 amount) external override returns (bool) {
+        allow[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
+        require(allow[sender][msg.sender] >= amount, "Not enough allowance");
+
+        balance[sender] -= amount;
+        balance[recipient] += amount;
+        allow[sender][msg.sender] -= amount;
+
+        emit Transfer(sender, recipient, amount);
+        return true;
+    }
+
+    function transfer(address to, uint256 amount) external override returns (bool) {
+        require(amount < balance[msg.sender]);
         balance[msg.sender] -= amount;
         balance[to] += amount;
-        emit Transfer(msg.sender,to, amount);
+
+        emit Transfer(msg.sender, to, amount);
         return true;
-        }
-    function  approve(address spender , uint256 amount) external returns(bool){
-        allowance[msg.sender][spender]= amount;
-        emit Approval(msg.sender,spender,amount);
     }
 
-    function transferFrom(address sender, address to, uint256 amount) external returns(bool){
-        allowance[msg.sender][sender] -= amount;
-        balance[msg.sender[sender]] -= amount;
-        balance[msg.sender][to] += amount;
-        emit Transfer(sender, to, amount);
+    function balanceOf(address account) external view override returns (uint256) {
+        return balance[account];
     }
 
-    function balanceOf (address account)external view returns(uint256){
-        return balance[msg.sender];
+    function mint(address account, uint256 amount) public {
+        balance[account] += amount;
+        tokenSupply += amount;
     }
 
-    function mint(address account, uint256 amount) public{
-      balance[msg.sender] += amount;
-      tokenSupply += amount;
+    function burn(address account, uint256 amount) public {
+        balance[account] -= amount;
+        tokenSupply -= amount;
     }
-
-    function burn(address account, uint256 amount) public{
-       balance[msg.sender] -= amount;
-       tokenSupply -= amount; 
-    }
-
-    //function
-    
 }
