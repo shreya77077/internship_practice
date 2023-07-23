@@ -6,75 +6,96 @@ interface IERC20 {
     function totalSupply() external view returns (uint256);
     function balanceOf(address account) external view returns (uint256);
     function transfer(address to, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
+    function allowance(address account, address spender) external view returns (uint256);
+    function approve(address owner ,address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-contract MyToken is IERC20 {
+   contract MyToken is IERC20 {
     string public name;
     string public symbol;
     uint8 public decimals;
-    uint256 public tokenSupply;
+    uint256 public totalSupply;
+
+    address public Owner;
 
     mapping(address => mapping(address => uint256)) private allow;
     mapping(address => uint256) private balance;
 
-    constructor()  {
+
+    modifier onlyOwner (){
+        require(Owner == msg.sender,"not owner");
+        _;
+    } 
+   
+
+    constructor() {
         name = "smartSense";
-        symbol = "SMART";
+        symbol = "SMART";  
         decimals = 18;
-        tokenSupply = 10000000000;
+        totalSupply = 10000000000;
+        Owner = msg.sender;
     }
 
-    function totalSupply() external view override returns (uint256) {
-        return tokenSupply;
-    }
+ 
 
+    
     function allowance(address owner, address spender) external view override returns (uint256) {
         return allow[owner][spender];
     }
+    
 
-    function approve(address spender, uint256 amount) external override returns (bool) {
-        allow[msg.sender][spender] = amount;
-        emit Approval(msg.sender, spender, amount);
+
+    function approve(address account , address spender, uint256 amount) external override returns (bool) {
+        allow[account][spender] = amount; 
+        emit Approval(account, spender, amount);
         return true;
     }
-
-    function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-        require(allow[sender][msg.sender] >= amount, "Not enough allowance");
-
-        balance[sender] -= amount;
-        balance[recipient] += amount;
-        allow[sender][msg.sender] -= amount;
-
-        emit Transfer(sender, recipient, amount);
-        return true;
+    
+    function transferFrom(address sender, address recipient, uint256 amount) external override returns(bool){
+       require(allow[sender][msg.sender] >= amount, "Not enough allowance ");
+       balance[sender] -= amount;
+       balance[recipient] += amount;
+       allow[sender][msg.sender] -= amount;
+       emit Transfer(sender, recipient, amount);
+       return true;
     }
 
-    function transfer(address to, uint256 amount) external override returns (bool) {
+    
+    function transfer(address to, uint256 amount) external override returns(bool){
         require(amount < balance[msg.sender]);
         balance[msg.sender] -= amount;
         balance[to] += amount;
-
-        emit Transfer(msg.sender, to, amount);
+        emit Transfer(msg.sender,to, amount);
         return true;
     }
 
-    function balanceOf(address account) external view override returns (uint256) {
+    function balanceOf(address account) external view override returns(uint256){
         return balance[account];
     }
 
-    function mint(address account, uint256 amount) public {
+    function mint(address account , uint256 amount) public onlyOwner {
         balance[account] += amount;
-        tokenSupply += amount;
+        totalSupply += amount;
     }
+    
+    // }
+//only owner/selfburn
 
-    function burn(address account, uint256 amount) public {
-        balance[account] -= amount;
-        tokenSupply -= amount;
+//32798 gas
+
+//32129
+     function burn( uint256 amount) public {
+       //require(account == msg.sender,"not the right account");
+        balance[msg.sender] -= amount;
+        totalSupply -= amount;
     }
+  
+    
+   
+
 }
+
