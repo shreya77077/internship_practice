@@ -7,7 +7,7 @@ interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
     function transfer(address to, uint256 amount) external returns (bool);
     function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address owner, address spender, uint256 amount) external returns (bool);
+    function approve( address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -47,10 +47,10 @@ contract MyToken is IERC20 {
         return allow[owner][spender];
     }
 
-    function approve(address owner, address spender, uint256 amount) external override returns (bool) {
+    function approve(address spender, uint256 amount) external override returns (bool) {
         uint256 convertedAmount = amount * (10 ** decimals);
-        allow[owner][spender] = convertedAmount; 
-        emit Approval(owner, spender, amount);
+        allow[msg.sender][spender] = convertedAmount; 
+        emit Approval(msg.sender, spender, amount);
         return true;
     }
 
