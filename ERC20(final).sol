@@ -48,27 +48,27 @@ contract MyToken is IERC20 {
     }
 
     function approve(address spender, uint256 amount) external override returns (bool) {
-        uint256 convertedAmount = amount * (10 ** decimals);
-        allow[msg.sender][spender] = convertedAmount; 
+        //uint256 convertedAmount = amount * (10 ** decimals);
+        allow[msg.sender][spender] = amount; 
         emit Approval(msg.sender, spender, amount);
         return true;
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) external override returns(bool) {
-        uint256 convertedAmount = amount * (10 ** decimals);
-        require(allow[sender][msg.sender] >= convertedAmount, "Not enough allowance");
-        balance[sender] -= convertedAmount;
-        balance[recipient] += convertedAmount;
-        allow[sender][msg.sender] -= convertedAmount;
+        //uint256 convertedAmount = amount * (10 ** decimals);
+        require(allow[sender][msg.sender] >= amount, "Not enough allowance");
+        balance[sender] -= amount;
+        balance[recipient] += amount;
+        allow[sender][msg.sender] -= amount;
         emit Transfer(sender, recipient, amount);
         return true;
     }
 
     function transfer(address to, uint256 amount) external override returns(bool) {
-        uint256 convertedAmount = amount * (10 ** decimals);
-        require(convertedAmount < balance[msg.sender], "Insufficient balance");
-        balance[msg.sender] -= convertedAmount;
-        balance[to] += convertedAmount;
+        //uint256 convertedAmount = amount * (10 ** decimals);
+        require(amount < balance[msg.sender], "Insufficient balance");
+        balance[msg.sender] -= amount;
+        balance[to] += amount;
         emit Transfer(msg.sender, to, amount);
         return true;
     }
